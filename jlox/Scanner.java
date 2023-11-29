@@ -77,6 +77,7 @@ class Scanner {
                     while (peek() != '\n' && !isAtEnd()) advance();
                 } else if (match('*')) {
                     // TODO: add nested multiline comments
+                    int commentStart = line;
                     if (peek() == '\n') line++;
                     advance();
                     boolean insideMultilineComment = true;
@@ -86,7 +87,7 @@ class Scanner {
                             advance();
                         }
                         if (isAtEnd()) {
-                            Lox.error(line, String.format("Unended multiline comment"));
+                            Lox.error(line, String.format("Unended multiline comment that started on line %d.", commentStart));
                             insideMultilineComment = false;
                         } else {
                             advance();

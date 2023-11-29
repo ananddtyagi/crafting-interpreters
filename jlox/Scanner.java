@@ -26,7 +26,7 @@ class Scanner {
         keywords.put("if",     IF);
         keywords.put("nil",    NIL);
         keywords.put("or",     OR);
-        keywords.put("xor", XOR);
+        keywords.put("xor",    XOR);
         keywords.put("print",  PRINT);
         keywords.put("return", RETURN);
         keywords.put("super",  SUPER);
@@ -75,6 +75,21 @@ class Scanner {
             case '/':
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (match('*')) {
+                    // TODO: add nested multiline comments
+                    advance();
+                    boolean insideMultilineComment = true;
+                    while(insideMultilineComment && !isAtEnd()) {
+                        while (peek() != '*' && !isAtEnd()) {
+                            advance();
+                        }
+                        advance();
+                        if (peek() == '/' && !isAtEnd()) {
+                            advance();
+                            insideMultilineComment = false;
+                        }
+                    }
+  
                 } else {
                     addToken(SLASH);
                 }
@@ -139,8 +154,6 @@ class Scanner {
 
     private boolean isNumber(char c) {
         return c >= '0' && c <= '9';
-        // TODO: is it faster to do -> ?
-        // return !(c < '0' || c > '9')
     }
 
     private void string() {

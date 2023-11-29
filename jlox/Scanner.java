@@ -77,16 +77,24 @@ class Scanner {
                     while (peek() != '\n' && !isAtEnd()) advance();
                 } else if (match('*')) {
                     // TODO: add nested multiline comments
+                    if (peek() == '\n') line++;
                     advance();
                     boolean insideMultilineComment = true;
                     while(insideMultilineComment && !isAtEnd()) {
                         while (peek() != '*' && !isAtEnd()) {
+                            if (peek() == '\n') line++;
                             advance();
                         }
-                        advance();
-                        if (peek() == '/' && !isAtEnd()) {
-                            advance();
+                        if (isAtEnd()) {
+                            Lox.error(line, String.format("Unended multiline comment"));
                             insideMultilineComment = false;
+                        } else {
+                            advance();
+                            if (peek() == '/' && !isAtEnd()) {
+                                if (peek() == '\n') line++;
+                                advance();
+                                insideMultilineComment = false;
+                            }
                         }
                     }
   

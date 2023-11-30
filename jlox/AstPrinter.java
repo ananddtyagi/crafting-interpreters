@@ -1,8 +1,6 @@
 package jlox;
 
-import jlox.TokenType;
 import jlox.Expression.*;
-import jlox.Token;
 
 class AstPrinter implements Expression.Visitor<String> {
     String print(Expression expression) {
@@ -44,7 +42,10 @@ class AstPrinter implements Expression.Visitor<String> {
     }
 
     public static void main(String[] args) {
-        Expression expression = new Binary(
+        System.out.println(new AstPrinter().print(example));
+    }
+
+    private static Expression example = new Binary(
             new Unary(
                 new Token(TokenType.MINUS, "-", null, 1, 0),
                 new Literal(123)
@@ -55,6 +56,4 @@ class AstPrinter implements Expression.Visitor<String> {
             )
         );
     
-        System.out.println(new AstPrinter().print(expression));
-    }
 }

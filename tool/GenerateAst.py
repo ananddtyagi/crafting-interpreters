@@ -1,54 +1,55 @@
 import os
 
-
 class GenerateAst:
-    def __init__(self):
-        # take in relative from input
-        self.relative_path = "jlox"
-        self.path = os.path.abspath(self.relative_path)
-        self.defineAst = [
-            (
-                "Binary",
-                [
-                    ("Expression", "left"),
-                    ("Token", "operator"),
-                    ("Expression", "right"),
-                ],
-            ),
+    def __init__(self, relative_path):
+        self.path = os.path.abspath(relative_path)
+        self.define_ast = [
+            ("Binary", [("Expression", "left"), ("Token", "operator"), ("Expression", "right")]),
             ("Grouping", [("Expression", "expression")]),
             ("Literal", [("Object", "value")]),
             ("Unary", [("Token", "operator"), ("Expression", "right")]),
         ]
+        self.base_name = "Expression"
 
     def create_expression_file(self):
         file_path = os.path.join(self.path, "Expression.java")
 
         with open(file_path, "w+") as f:
-            self.curlyBraceWrapper = self.CurlyBraceWrapper(f)
-            self.parenthesisWrapper = self.ParenthesisWrapper(f)
             self.write_package(f, "jlox")
-            self.class_header(f, "abstract", "Expression")
-            with self.curlyBraceWrapper as _:
-                for class_type, fields in self.defineAst:
-                    self.class_header(f, "static", class_type, "Expression")
-                    with self.curlyBraceWrapper as _:
+            with self.CurlyBraceWrapper(f, self.generate_class_header(f, "abstract class", self.base_name)) as _:
+                with self.CurlyBraceWrapper(f, self.generate_class_header(f, "interface", "Visitor<R>")) as _:
+                    for class_type, fields in self.define_ast:
+                        self.define_visitor(f, class_type)                
+                for class_type, fields in self.define_ast:
+                    with self.CurlyBraceWrapper(f, self.generate_class_header(f, "static class", class_type, "Expression")) as _:
                         self.create_constructor(f, class_type, fields)
+                        self.accept_override(f, class_type)
                         self.declare_fields(f, fields)
-                    
+                self.define_abstract_accept(f)
+                
+    def accept_override(self, f, class_type):
+        with self.CurlyBraceWrapper(f, "<R> R accept(Visitor<R> visitor)") as _:
+            f.write(f"return visitor.visit{class_type}{self.base_name}(this);")
+        
+    def define_abstract_accept(self, f):
+        f.write("abstract <R> R accept(Visitor<R> visitor);")
+        
+    def define_visitor(self, f, class_type):
+        f.write(f" R visit{class_type}{self.base_name} ({class_type} {self.base_name.lower()});")
+    
     def declare_fields(self, f, fields):
         for field_type, name in fields:
             f.write(f"final {field_type} {name};")
         
     def create_constructor(self, f, class_type, fields):
-        f.write(f"{class_type}")
-        with self.parenthesisWrapper as _:
+        with self.ParenthesisWrapper(f, prefix=class_type) as _:
             for i, field in enumerate(fields):
                 field_type, name = field
                 f.write(f"{field_type} {name}")
                 if i != len(fields) - 1:
                     f.write(", ")
 
-        with self.curlyBraceWrapper as _:
+        with self.CurlyBraceWrapper(f) as _:
             for field in fields:
                 field_type, name = field
                 f.write(f"this.{name} = {name};")
@@ -58,35 +59,32 @@ class GenerateAst:
         f.write(f"package {package_name};")
 
     @staticmethod
-    def class_header(f, class_type, class_name, *extends):
+    def generate_class_header(f, class_type, class_name, extends=None):
         def extensions():
             if extends:
-                return f" extends {extends[0]}"
+                return f" extends {extends}"
             return None
-
-        f.write(f"{class_type} class {class_name}{extensions() or ' '}")
+        return (f"{class_type} {class_name}{extensions() or ' '}")
 
     class CurlyBraceWrapper:
-        def __init__(self, file_writer):
+        def __init__(self, file_writer, clause_header=""):
             self.file = file_writer
-
+            self.clause_header = clause_header
         def __enter__(self):
-            self.file.write("{")
-
+            self.file.write(f"{self.clause_header}{'{'}")
         def __exit__(self, exc_type, exc_value, tb):
             self.file.write("}")
 
     class ParenthesisWrapper:
-        def __init__(self, file_writer):
+        def __init__(self, file_writer, prefix = '', postfix = ''):
             self.file = file_writer
-
+            self.prefix = prefix
+            self.postfix = postfix
         def __enter__(self):
-            self.file.write("(")
-
+            self.file.write(f"{self.prefix}(")
         def __exit__(self, exc_type, exc_value, tb):
-            self.file.write(")")
-
+            self.file.write(f"){self.postfix}")
 
 if __name__ == "__main__":
-    genAst = GenerateAst()
+    genAst = GenerateAst("jlox")
     genAst.create_expression_file()

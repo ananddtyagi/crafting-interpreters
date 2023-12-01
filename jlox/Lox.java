@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import jlox.RecursiveParser;
 public class Lox {
     static boolean hadError = false;
     public static void main(String[] args) throws IOException {
@@ -44,13 +45,23 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
 
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
+        RecursiveParser recursiveParser = new RecursiveParser(tokens);
+        Expression expression = recursiveParser.parse();
+        if (hadError) return;
+
+        System.out.println(new AstPrinter().print(expression));
     }
 
     static void error(int line, String message) {
         report(line, "", message);
+    }
+
+    static void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message);
+        } else {
+            report(token.line, String.format(" at '%s'", token.lexeme), message);
+        }
     }
 
     private static void report(int line, String where, String message) {

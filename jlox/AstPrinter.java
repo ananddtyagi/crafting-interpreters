@@ -19,7 +19,7 @@ class AstPrinter implements Expression.Visitor<String> {
 
     @Override
     public String visitLiteralExpression(Literal expression) {
-        if (expression.value == null) return "null";
+        if (expression.value == null) return "nil";
         return expression.value.toString();
     }
 

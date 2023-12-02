@@ -118,7 +118,7 @@ class Scanner {
             default:
                 if (isNumber(c)) {
                     number();
-                } else if (isAlpha(c)) {
+                } else if (isAlpha(c) || isUnderscore(c)) {
                     identifier();
                 } else {
                     Lox.error(line, String.format("Unexpected character %c", c));
@@ -137,30 +137,32 @@ class Scanner {
     }
 
     private boolean isAlphaNumeric(char c) {
-        return isAlpha(c) || isNumber(c);
+        return isAlpha(c) || isNumber(c) || isUnderscore(c);
     }
 
+    private boolean isUnderscore(char c) {
+        return c == '_';
+     }
     private boolean isAlpha(char c) {
         return  (c >= 'a' && c <= 'z') ||
-                (c >= 'A' && c <= 'Z') ||
-                c == '_';
+                (c >= 'A' && c <= 'Z');
     }
 
     private void number() {
-        boolean isDouble = false;
+        // boolean isDouble = false;
         while(isNumber(peek())) advance();
 
         if(peek() == '.' && isNumber(peekNext())) {
             advance(); // this is the decimal
-            isDouble = true;
+            // isDouble = true;
             while(isNumber(peek())) advance();
         }
-        
-        if (isDouble) {
-            addToken(NUMBER, Double.parseDouble(source.substring(start, current))); // TODO: this uses Java's double parser, write my own parser instead
-        } else {
-            addToken(NUMBER, Integer.parseInt(source.substring(start, current)));
-        }
+        // if (isDouble) {
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current))); // TODO: this uses Java's double parser, write my own parser instead
+        // } 
+        // else {
+        //     addToken(NUMBER, Integer.parseInt(source.substring(start, current)));
+        // }
     }
 
     private boolean isNumber(char c) {
@@ -173,7 +175,6 @@ class Scanner {
             advance();
         }
         // we have either reached the end of the string or end of file
-        
         
         if (isAtEnd()) { // end of file before end of string
             Lox.error(line, "Unterminated string.");
@@ -193,7 +194,7 @@ class Scanner {
 
     private char peekNext() {
         if (current + 1 >= source.length()) return '\0';
-        return source.charAt(current);
+        return source.charAt(current+1);
     }
 
     private boolean match(char expected) {

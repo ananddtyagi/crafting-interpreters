@@ -142,7 +142,7 @@ public class RecursiveParser {
         }
     }
 
-    private boolean match(TokenType... tokenTypes) {
+    private boolean match(TokenType... tokenTypes) {;
         for (TokenType tokenType : tokenTypes) {
             if (check(tokenType)) {
                 advance();

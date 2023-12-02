@@ -10,7 +10,10 @@ import java.util.List;
 
 import jlox.RecursiveParser;
 public class Lox {
+    private static final Interpreter interpreter = new Interpreter();
+
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
     public static void main(String[] args) throws IOException {
         if(args.length > 1){
             System.out.println("Usage jlox [script]");
@@ -26,6 +29,7 @@ public class Lox {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
         if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70);
     }
 
     private static void runPrompt() throws IOException {
@@ -49,7 +53,7 @@ public class Lox {
         Expression expression = recursiveParser.parse();
         if (hadError) return;
 
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     static void error(int line, String message) {
@@ -67,5 +71,10 @@ public class Lox {
     private static void report(int line, String where, String message) {
         System.err.println(String.format("[line %2d] Error%s: %s", line, where, message));
         hadError = true;
+    }
+
+    public static void runtimeError(RuntimeError error) {
+        System.err.println(String.format(error.getMessage(),"\n[line %2d]", error.token.line));
+        hadRuntimeError = true;
     }
 }

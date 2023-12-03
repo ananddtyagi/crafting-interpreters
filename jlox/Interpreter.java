@@ -2,12 +2,25 @@ package jlox;
 
 import static jlox.TokenType.*;
 
+import java.util.List;
+
 import jlox.Expression.Binary;
 import jlox.Expression.Grouping;
 import jlox.Expression.Literal;
 import jlox.Expression.Unary;
+import jlox.Statement.Print;
 
-public class Interpreter implements Expression.Visitor<Object> {
+public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
+
+    void interpret(List<Statement> statements) {
+        try {
+            for (Statement statement : statements) {
+                execute(statement);
+            }
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+    } 
 
     void interpret(Expression expression) {
         try {
@@ -16,7 +29,7 @@ public class Interpreter implements Expression.Visitor<Object> {
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
-    }
+    } 
 
     private String stringify(Object object) {
         if (object == null) return "nil";
@@ -64,7 +77,8 @@ public class Interpreter implements Expression.Visitor<Object> {
             case GREATER_EQUAL:
                 mustBeNumerical(operator, left, right);
                 return (double) left >= (double) right;
-
+            default:
+                break;
         }
         return null;
     }
@@ -155,6 +169,8 @@ public class Interpreter implements Expression.Visitor<Object> {
                 return !isTruthy(right);
             case MINUS:
                 return -(double) right;
+            default:
+                break;
         }
 
         return null;
@@ -170,7 +186,23 @@ public class Interpreter implements Expression.Visitor<Object> {
 
     private Object evaluate(Expression expression) {
         return expression.accept(this);
+    }
 
+    private void execute(Statement statement) {
+        statement.accept(this);
+    }
+
+    @Override
+    public Void visitExpressionStatement(Statement.Expression statement) {
+        evaluate(statement.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStatement(Print statement) {
+        Object value = evaluate(statement.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 
 }

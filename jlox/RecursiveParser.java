@@ -2,6 +2,7 @@ package jlox;
 
 import static jlox.TokenType.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jlox.Expression.*;
@@ -16,12 +17,28 @@ public class RecursiveParser {
         this.tokens = tokens;
     }
 
-    Expression parse() {
-        try {
-            return expression();
-        } catch (RecursiveParseError error) {
-            return null;
+    List<Statement> parse() {
+        List<Statement> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+        return statements;
+    }
+
+    private Statement statement() {
+        return match(PRINT) ? printStatement() : expressionStatement();
+    }
+
+    private Statement expressionStatement() {
+        Expression expression = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Statement.Expression(expression);
+    }
+
+    private Statement printStatement() {
+        Expression value = expression();
+        consume(SEMICOLON, "Expect ';' after print statement.");
+        return new Statement.Print(value);
     }
 
     private Expression expression() {
@@ -171,6 +188,6 @@ public class RecursiveParser {
     }
 
     private boolean isAtEnd() {
-        return current >= tokens.size();
+        return current >= tokens.size()-1;
     }
 }

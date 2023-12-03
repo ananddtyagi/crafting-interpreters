@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import jlox.RecursiveParser;
 public class Lox {
     private static final Interpreter interpreter = new Interpreter();
 
@@ -50,10 +49,10 @@ public class Lox {
         List<Token> tokens = scanner.scanTokens();
 
         RecursiveParser recursiveParser = new RecursiveParser(tokens);
-        Expression expression = recursiveParser.parse();
+        List<Statement> statements = recursiveParser.parse();
         if (hadError) return;
 
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
     }
 
     static void error(int line, String message) {

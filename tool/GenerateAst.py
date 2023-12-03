@@ -1,27 +1,22 @@
 import os
 
 class GenerateAst:
-    def __init__(self, relative_path):
+    def __init__(self, relative_path, class_name, ast):
         self.path = os.path.abspath(relative_path)
-        self.define_ast = [
-            ("Binary", [("Expression", "left"), ("Token", "operator"), ("Expression", "right")]),
-            ("Grouping", [("Expression", "expression")]),
-            ("Literal", [("Object", "value")]),
-            ("Unary", [("Token", "operator"), ("Expression", "right")]),
-        ]
-        self.base_name = "Expression"
+        self.define_ast = ast
+        self.class_name = class_name
 
-    def create_expression_file(self):
-        file_path = os.path.join(self.path, "Expression.java")
+    def create_file(self):
+        file_path = os.path.join(self.path, f"{self.class_name}.java")
 
         with open(file_path, "w+") as f:
             self.write_package(f, "jlox")
-            with self.CurlyBraceWrapper(f, self.generate_class_header(f, "abstract class", self.base_name)) as _:
+            with self.CurlyBraceWrapper(f, self.generate_class_header(f, "abstract class", self.class_name)) as _:
                 with self.CurlyBraceWrapper(f, self.generate_class_header(f, "interface", "Visitor<R>")) as _:
                     for class_type, fields in self.define_ast:
                         self.define_visitor(f, class_type)                
                 for class_type, fields in self.define_ast:
-                    with self.CurlyBraceWrapper(f, self.generate_class_header(f, "static class", class_type, "Expression")) as _:
+                    with self.CurlyBraceWrapper(f, self.generate_class_header(f, "static class", class_type, self.class_name)) as _:
                         self.create_constructor(f, class_type, fields)
                         self.accept_override(f, class_type)
                         self.declare_fields(f, fields)
@@ -29,13 +24,13 @@ class GenerateAst:
                 
     def accept_override(self, f, class_type):
         with self.CurlyBraceWrapper(f, "<R> R accept(Visitor<R> visitor)") as _:
-            f.write(f"return visitor.visit{class_type}{self.base_name}(this);")
+            f.write(f"return visitor.visit{class_type}{self.class_name}(this);")
         
     def define_abstract_accept(self, f):
         f.write("abstract <R> R accept(Visitor<R> visitor);")
         
     def define_visitor(self, f, class_type):
-        f.write(f" R visit{class_type}{self.base_name} ({class_type} {self.base_name.lower()});")
+        f.write(f" R visit{class_type}{self.class_name} ({class_type} {self.class_name.lower()});")
     
     def declare_fields(self, f, fields):
         for field_type, name in fields:
@@ -86,5 +81,17 @@ class GenerateAst:
             self.file.write(f"){self.postfix}")
 
 if __name__ == "__main__":
-    genAst = GenerateAst("jlox")
-    genAst.create_expression_file()
+    expression_ast_props = [
+            ("Binary", [("Expression", "left"), ("Token", "operator"), ("Expression", "right")]),
+            ("Grouping", [("Expression", "expression")]),
+            ("Literal", [("Object", "value")]),
+            ("Unary", [("Token", "operator"), ("Expression", "right")]),
+        ]
+    # genAst = GenerateAst("jlox", "Expression", expression_ast_props)
+    statement_ast_props = [
+        ("Expression", [("jlox.Expression", "expression")]),
+        ("Print", [("jlox.Expression", "expression")])
+    ]
+    genAst = GenerateAst("jlox", "Statement", statement_ast_props)
+    genAst.create_file()
+

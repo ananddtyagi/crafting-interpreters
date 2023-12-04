@@ -1,7 +1,5 @@
 package jlox;
 
-import static jlox.TokenType.*;
-
 import java.util.List;
 
 import jlox.Expression.Binary;

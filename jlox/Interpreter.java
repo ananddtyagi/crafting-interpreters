@@ -8,9 +8,12 @@ import jlox.Expression.Binary;
 import jlox.Expression.Grouping;
 import jlox.Expression.Literal;
 import jlox.Expression.Unary;
+import jlox.Expression.Variable;
 import jlox.Statement.Print;
+import jlox.Statement.Var;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
+    private Environment environment = new Environment();
 
     void interpret(List<Statement> statements) {
         try {
@@ -176,6 +179,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public Object visitVariableExpression(Variable expression) {
+        return environment.get(expression.name);
+    }
+
     private boolean isTruthy(Object object) {
         if (object == null)
             return false;
@@ -205,4 +213,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public Void visitVarStatement(Var statement) {
+        Object value = statement.initializer != null ? evaluate(statement.initializer) : null;
+        environment.define(statement.name.lexeme, value);
+        return null;
+    }
 }

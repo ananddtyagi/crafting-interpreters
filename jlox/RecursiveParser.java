@@ -2,6 +2,7 @@ package jlox;
 
 import static jlox.TokenType.*;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +21,40 @@ public class RecursiveParser {
     List<Statement> parse() {
         List<Statement> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
         return statements;
     }
+
+    Expression parseExpression() {
+        Expression expression = expression();
+        return expression;
+    }
+
+    private Statement declaration() {
+        try {
+            if(match(VAR)) return varDeclaration();
+
+            return statement();
+        }
+        catch (RecursiveParseError recursiveParseError) {
+            synchronize();
+            return null;
+        }
+    }
+
+    private Statement varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expecting variable name when declaring variable.");
+
+        Expression initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Statement.Var(name, initializer);
+    }
+
 
     private Statement statement() {
         return match(PRINT) ? printStatement() : expressionStatement();
@@ -109,10 +140,10 @@ public class RecursiveParser {
         if (match(FALSE)) return new Literal(false);
         if (match(TRUE)) return new Literal(true);
         if (match(NIL)) return new Literal(null);
-
         if (match(NUMBER, STRING)) {
             return new Literal(previous().literal);
         }
+        if (match(IDENTIFIER)) return new Variable(previous());
 
         if (match(LEFT_PAREN)) {
             Expression expression = expression();
@@ -188,6 +219,6 @@ public class RecursiveParser {
     }
 
     private boolean isAtEnd() {
-        return current >= tokens.size()-1;
+        return peek().type == EOF;
     }
 }

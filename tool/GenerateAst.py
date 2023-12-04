@@ -86,11 +86,16 @@ if __name__ == "__main__":
             ("Grouping", [("Expression", "expression")]),
             ("Literal", [("Object", "value")]),
             ("Unary", [("Token", "operator"), ("Expression", "right")]),
+            ("Variable", [("Token", "name")]),
         ]
-    # genAst = GenerateAst("jlox", "Expression", expression_ast_props)
+    genAst = GenerateAst("jlox", "Expression", expression_ast_props)
+    genAst.create_file()
+    
     statement_ast_props = [
         ("Expression", [("jlox.Expression", "expression")]),
-        ("Print", [("jlox.Expression", "expression")])
+        ("Print", [("jlox.Expression", "expression")]),
+        ("Var", [("Token", "name"), ("jlox.Expression", "initializer")]),
+        
     ]
     genAst = GenerateAst("jlox", "Statement", statement_ast_props)
     genAst.create_file()

@@ -5,6 +5,8 @@ abstract class Statement {
         R visitExpressionStatement(Expression statement);
 
         R visitPrintStatement(Print statement);
+
+        R visitVarStatement(Var statement);
     }
 
     static class Expression extends Statement {
@@ -29,6 +31,20 @@ abstract class Statement {
         }
 
         final jlox.Expression expression;
+    }
+
+    static class Var extends Statement {
+        Var(Token name, jlox.Expression initializer) {
+            this.name = name;
+            this.initializer = initializer;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVarStatement(this);
+        }
+
+        final Token name;
+        final jlox.Expression initializer;
     }
 
     abstract <R> R accept(Visitor<R> visitor);

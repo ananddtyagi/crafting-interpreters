@@ -28,6 +28,14 @@ class AstPrinter implements Expression.Visitor<String> {
         return parenthesize(expression.operator.lexeme, expression.right);
     };
 
+
+    @Override
+    public String visitVariableExpression(Variable expression) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpression'");
+    }
+    
+
     private String parenthesize(String name, Expression... expressions) {
         StringBuilder builder = new StringBuilder();
 
@@ -55,5 +63,4 @@ class AstPrinter implements Expression.Visitor<String> {
                 new Literal(45.67)
             )
         );
-    
 }

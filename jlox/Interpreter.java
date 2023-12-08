@@ -13,7 +13,7 @@ import jlox.Statement.Var;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
     private Environment environment = new Environment();
-    static private boolean repl;
+    private boolean repl;
 
     void interpret(List<Statement> statements, boolean repl) {
         this.repl = repl;

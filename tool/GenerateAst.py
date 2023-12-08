@@ -82,6 +82,7 @@ class GenerateAst:
 
 if __name__ == "__main__":
     expression_ast_props = [
+            ("Assign", [("Token", "name"), ("jlox.Expression", "value")]),
             ("Binary", [("Expression", "left"), ("Token", "operator"), ("Expression", "right")]),
             ("Grouping", [("Expression", "expression")]),
             ("Literal", [("Object", "value")]),

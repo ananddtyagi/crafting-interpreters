@@ -63,4 +63,10 @@ class AstPrinter implements Expression.Visitor<String> {
                 new Literal(45.67)
             )
         );
+
+    @Override
+    public String visitAssignExpression(Assign expression) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpression'");
+    }
 }

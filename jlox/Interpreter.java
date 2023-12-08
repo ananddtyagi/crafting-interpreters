@@ -2,6 +2,7 @@ package jlox;
 
 import java.util.List;
 
+import jlox.Expression.Assign;
 import jlox.Expression.Binary;
 import jlox.Expression.Grouping;
 import jlox.Expression.Literal;
@@ -216,5 +217,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         Object value = statement.initializer != null ? evaluate(statement.initializer) : null;
         environment.define(statement.name.lexeme, value);
         return null;
+    }
+
+    @Override
+    public Object visitAssignExpression(Assign expression) {
+        Object value = evaluate(expression.value);
+        environment.assign(expression.name, value);
+        return value;
     }
 }

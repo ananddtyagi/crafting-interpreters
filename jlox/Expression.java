@@ -2,6 +2,8 @@ package jlox;
 
 abstract class Expression {
     interface Visitor<R> {
+        R visitAssignExpression(Assign expression);
+
         R visitBinaryExpression(Binary expression);
 
         R visitGroupingExpression(Grouping expression);
@@ -11,6 +13,20 @@ abstract class Expression {
         R visitUnaryExpression(Unary expression);
 
         R visitVariableExpression(Variable expression);
+    }
+
+    static class Assign extends Expression {
+        Assign(Token name, jlox.Expression value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssignExpression(this);
+        }
+
+        final Token name;
+        final jlox.Expression value;
     }
 
     static class Binary extends Expression {

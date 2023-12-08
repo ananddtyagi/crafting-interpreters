@@ -1,5 +1,7 @@
 package jlox;
 
+import java.util.List;
+
 abstract class Statement {
     interface Visitor<R> {
         R visitExpressionStatement(Expression statement);
@@ -7,6 +9,8 @@ abstract class Statement {
         R visitPrintStatement(Print statement);
 
         R visitVarStatement(Var statement);
+
+        R visitBlockStatement(Block statement);
     }
 
     static class Expression extends Statement {
@@ -45,6 +49,18 @@ abstract class Statement {
 
         final Token name;
         final jlox.Expression initializer;
+    }
+
+    static class Block extends Statement {
+        Block(List<Statement> statements) {
+            this.statements = statements;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBlockStatement(this);
+        }
+
+        final List<Statement> statements;
     }
 
     abstract <R> R accept(Visitor<R> visitor);

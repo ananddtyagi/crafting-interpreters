@@ -13,6 +13,7 @@ public class Lox {
 
     static boolean hadError = false;
     static boolean hadRuntimeError = false;
+    static boolean repl = false;
     public static void main(String[] args) throws IOException {
         if(args.length > 1){
             System.out.println("Usage jlox [script]");
@@ -20,6 +21,7 @@ public class Lox {
         } else if (args.length == 1) {
             runFile(args[0]);
         } else {
+            repl = true;
             runPrompt();
         }
     }
@@ -45,14 +47,18 @@ public class Lox {
     }
 
     private static void run(String source) {
+        List<Statement> statements = getStatements(source);
+        if (hadError) return;
+        interpreter.interpret(statements, repl);
+    }
+
+    private static List<Statement> getStatements(String source){
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
 
         RecursiveParser recursiveParser = new RecursiveParser(tokens);
         List<Statement> statements = recursiveParser.parse();
-        if (hadError) return;
-
-        interpreter.interpret(statements);
+        return statements;
     }
 
     static void error(int line, String message) {

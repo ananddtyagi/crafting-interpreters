@@ -1,16 +1,18 @@
 import os
 
 class GenerateAst:
-    def __init__(self, relative_path, class_name, ast):
+    def __init__(self, relative_path, class_name, ast, imports=[]):
         self.path = os.path.abspath(relative_path)
         self.define_ast = ast
         self.class_name = class_name
+        self.imports = imports
 
     def create_file(self):
         file_path = os.path.join(self.path, f"{self.class_name}.java")
 
         with open(file_path, "w+") as f:
             self.write_package(f, "jlox")
+            self.write_imports(f)
             with self.CurlyBraceWrapper(f, self.generate_class_header(f, "abstract class", self.class_name)) as _:
                 with self.CurlyBraceWrapper(f, self.generate_class_header(f, "interface", "Visitor<R>")) as _:
                     for class_type, fields in self.define_ast:
@@ -49,6 +51,11 @@ class GenerateAst:
                 field_type, name = field
                 f.write(f"this.{name} = {name};")
 
+    def write_imports(self, f):
+        for imp in self.imports:
+            f.write(f"import {imp};")
+            
+            
     @staticmethod
     def write_package(f, package_name):
         f.write(f"package {package_name};")
@@ -95,9 +102,9 @@ if __name__ == "__main__":
     statement_ast_props = [
         ("Expression", [("jlox.Expression", "expression")]),
         ("Print", [("jlox.Expression", "expression")]),
-        ("Var", [("Token", "name"), ("jlox.Expression", "initializer")]),
-        
+        ("Var", [("Token", "name"), ("jlox.Expression", "initializer")]),       
+        ("Block", [("List<Statement>", "statements")]),
     ]
-    genAst = GenerateAst("jlox", "Statement", statement_ast_props)
+    genAst = GenerateAst("jlox", "Statement", statement_ast_props, ["java.util.List"])
     genAst.create_file()
 

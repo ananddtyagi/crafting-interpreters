@@ -13,8 +13,10 @@ import jlox.Statement.Var;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
     private Environment environment = new Environment();
+    static private boolean repl;
 
-    void interpret(List<Statement> statements) {
+    void interpret(List<Statement> statements, boolean repl) {
+        this.repl = repl;
         try {
             for (Statement statement : statements) {
                 execute(statement);
@@ -22,7 +24,17 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
-    } 
+    }
+
+    void interpretREPL(List<Statement> statements) {
+        try {
+            for (Statement statement : statements) {
+                execute(statement);
+            }
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+    }
 
     void interpret(Expression expression) {
         try {
@@ -31,10 +43,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
-    } 
+    }
 
     private String stringify(Object object) {
-        if (object == null) return "nil";
+        if (object == null)
+            return "nil";
 
         if (object instanceof Double) {
             String text = object.toString();
@@ -43,7 +56,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             }
             return text;
         }
-        
+
         return object.toString();
     }
 
@@ -56,7 +69,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         switch (operator.type) {
             case MINUS:
                 mustBeNumerical(operator, left, right);
-                return (double)left - (double)right;
+                return (double) left - (double) right;
             case SLASH:
                 return handleSlash(operator, left, right);
             case STAR:
@@ -129,9 +142,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     private String multiplyString(Token operator, String str, double multiple) {
-         if ((double) multiple % 1 != 0) {
+        if ((double) multiple % 1 != 0) {
             throw new RuntimeError(operator, "Cannot multiply string with a non-integer");
-         }
+        }
 
         StringBuilder multipliedString = new StringBuilder();
         for (int i = 0; i < multiple; i++) {
@@ -201,7 +214,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitExpressionStatement(Statement.Expression statement) {
-        evaluate(statement.expression);
+        Object value = evaluate(statement.expression);
+        if (repl) {
+            System.out.println(stringify(value));
+        }
         return null;
     }
 
@@ -224,5 +240,24 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         Object value = evaluate(expression.value);
         environment.assign(expression.name, value);
         return value;
+    }
+
+    @Override
+    public Void visitBlockStatement(Statement.Block statement) {
+        executeBlock(statement.statements, new Environment(environment));
+        return null;
+    }
+
+    private void executeBlock(List<Statement> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+
+            for (Statement statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
     }
 }

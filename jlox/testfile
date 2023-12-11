@@ -18,3 +18,9 @@ if (b) {
     print("b value: " + b);
 }
 
+var c = 1;
+while (c < 4){
+    print(c);
+    c = c + 1;
+}
+

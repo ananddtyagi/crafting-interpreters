@@ -58,6 +58,7 @@ public class RecursiveParser {
     private Statement statement() {
         if (match(PRINT)) return printStatement();
         if (match(IF)) return ifStatement();
+        if (match(WHILE)) return whileStatement();
         if (match(LEFT_BRACE)) return new Statement.Block(block());
         return expressionStatement();
     }
@@ -100,6 +101,18 @@ public class RecursiveParser {
 
         return new Statement.If(condition, thenBranch, elseBranch);
     }
+
+    private Statement whileStatement() {
+        consume(LEFT_PAREN, "'(' expected for while conditional");
+        Expression condition = expression();
+        consume(RIGHT_PAREN, "')' expected after while condition");
+
+        consume(LEFT_BRACE, "Expect '{' for beginning of while block");
+        Statement body = new Statement.Block(block());
+
+        return new Statement.While(condition, body);
+    }
+
 
     private Expression expression() {
         return assignment();

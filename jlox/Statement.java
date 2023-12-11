@@ -13,6 +13,8 @@ abstract class Statement {
         R visitBlockStatement(Block statement);
 
         R visitIfStatement(If statement);
+
+        R visitWhileStatement(While statement);
     }
 
     static class Expression extends Statement {
@@ -79,6 +81,20 @@ abstract class Statement {
         final jlox.Expression condition;
         final Statement thenBranch;
         final Statement elseBranch;
+    }
+
+    static class While extends Statement {
+        While(jlox.Expression condition, Statement body) {
+            this.condition = condition;
+            this.body = body;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitWhileStatement(this);
+        }
+
+        final jlox.Expression condition;
+        final Statement body;
     }
 
     abstract <R> R accept(Visitor<R> visitor);

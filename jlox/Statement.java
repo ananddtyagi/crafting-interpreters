@@ -11,6 +11,8 @@ abstract class Statement {
         R visitVarStatement(Var statement);
 
         R visitBlockStatement(Block statement);
+
+        R visitIfStatement(If statement);
     }
 
     static class Expression extends Statement {
@@ -61,6 +63,22 @@ abstract class Statement {
         }
 
         final List<Statement> statements;
+    }
+
+    static class If extends Statement {
+        If(jlox.Expression condition, Statement thenBranch, Statement elseBranch) {
+            this.condition = condition;
+            this.thenBranch = thenBranch;
+            this.elseBranch = elseBranch;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitIfStatement(this);
+        }
+
+        final jlox.Expression condition;
+        final Statement thenBranch;
+        final Statement elseBranch;
     }
 
     abstract <R> R accept(Visitor<R> visitor);

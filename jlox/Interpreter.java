@@ -2,14 +2,10 @@ package jlox;
 
 import java.util.List;
 
-import jlox.Expression.Assign;
-import jlox.Expression.Binary;
-import jlox.Expression.Grouping;
-import jlox.Expression.Literal;
-import jlox.Expression.Unary;
-import jlox.Expression.Variable;
-import jlox.Statement.Print;
-import jlox.Statement.Var;
+import jlox.Expression.*;
+import jlox.Statement.*;
+
+import static jlox.TokenType.*;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
     private Environment environment = new Environment();
@@ -259,5 +255,30 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         } finally {
             this.environment = previous;
         }
+    }
+
+    @Override
+    public Void visitIfStatement(If statement) {
+        if (isTruthy(evaluate(statement.condition))) {
+            execute(statement.thenBranch);
+        } else if (statement.elseBranch != null) {
+            execute(statement.elseBranch);
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitLogicalExpression(Logical expression) {
+        // we actually return the value so you can do things like var x = a == b or nil for ex.
+        Object left = evaluate(expression.left);
+
+        if (expression.operator.type == OR) {
+            if (isTruthy(left))
+                return left;
+        } else {
+            if (!isTruthy(left))
+                return left;
+        }
+        return evaluate(expression.right);
     }
 }

@@ -69,4 +69,10 @@ class AstPrinter implements Expression.Visitor<String> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpression'");
     }
+
+    @Override
+    public String visitLogicalExpression(Logical expression) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitLogicalExpression'");
+    }
 }

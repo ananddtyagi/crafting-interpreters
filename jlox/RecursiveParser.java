@@ -57,6 +57,7 @@ public class RecursiveParser {
 
     private Statement statement() {
         if (match(PRINT)) return printStatement();
+        if (match(IF)) return ifStatement();
         if (match(LEFT_BRACE)) return new Statement.Block(block());
         return expressionStatement();
     }
@@ -84,12 +85,53 @@ public class RecursiveParser {
         return new Statement.Print(value);
     }
 
+    private Statement ifStatement() {
+        consume(LEFT_PAREN, "Expect '(' after if");
+        Expression condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after if conditional statement.");
+
+        consume(LEFT_BRACE, "Expect '{' for beginning of if block");
+        Statement thenBranch = new Statement.Block(block());
+        Statement elseBranch = null;
+        if (match(ELSE)){
+            consume(LEFT_BRACE, "Expect '{' for beginning of if block");
+            elseBranch = new Statement.Block(block());
+        }
+
+        return new Statement.If(condition, thenBranch, elseBranch);
+    }
+
     private Expression expression() {
         return assignment();
     }
 
-    private Expression assignment() {
+    private Expression or() {
+        Expression expression = and();
+
+        while (match(OR)) {
+            Token operator = previous();
+            Expression right = and();
+            expression = new Logical(expression, operator, right);
+        }
+
+        return expression;
+    }
+
+    private Expression and() {
         Expression expression = equality();
+
+        while (match(AND)) {
+            Token operator = previous();
+            Expression right = equality();
+            expression = new Logical(expression, operator, right);
+        }
+
+        return expression;
+    }
+
+    private Expression assignment() {
+        Expression expression = or();
+
         if (match(EQUAL)) {
             Token equals = previous();
             Expression value = assignment();

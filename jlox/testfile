@@ -2,6 +2,19 @@
 var a;
 var b;
 a = "assigned";
-print a; // OK, was assigned first.
 
-print b; // Error!
+if (a) {
+    print("a value: " + a);
+}
+
+if (b) {
+    print("b value: " + b);
+} else {
+    print("b value not assigned");
+}
+
+b = "valued";
+if (b) {
+    print("b value: " + b);
+}
+

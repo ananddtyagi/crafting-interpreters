@@ -95,6 +95,7 @@ if __name__ == "__main__":
             ("Literal", [("Object", "value")]),
             ("Unary", [("Token", "operator"), ("Expression", "right")]),
             ("Variable", [("Token", "name")]),
+            ("Logical", [("Expression", "left"),("Token", "operator"),("Expression", "right")]),
         ]
     genAst = GenerateAst("jlox", "Expression", expression_ast_props)
     genAst.create_file()
@@ -104,6 +105,8 @@ if __name__ == "__main__":
         ("Print", [("jlox.Expression", "expression")]),
         ("Var", [("Token", "name"), ("jlox.Expression", "initializer")]),       
         ("Block", [("List<Statement>", "statements")]),
+        ("If", [("jlox.Expression", "condition"), ("Statement", "thenBranch"), ("Statement", "elseBranch")]),
+        ("While", [("jlox.Expression", "condition"), ("Statement", "body")]),
     ]
     genAst = GenerateAst("jlox", "Statement", statement_ast_props, ["java.util.List"])
     genAst.create_file()

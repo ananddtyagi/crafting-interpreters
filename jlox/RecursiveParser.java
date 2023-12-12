@@ -11,7 +11,8 @@ public class RecursiveParser {
     private final List<Token> tokens;
     private int current = 0;
 
-    private static class RecursiveParseError extends RuntimeException {}
+    private static class RecursiveParseError extends RuntimeException {
+    }
 
     RecursiveParser(List<Token> tokens) {
         this.tokens = tokens;
@@ -32,11 +33,11 @@ public class RecursiveParser {
 
     private Statement declaration() {
         try {
-            if(match(VAR)) return varDeclaration();
+            if (match(VAR))
+                return varDeclaration();
 
             return statement();
-        }
-        catch (RecursiveParseError recursiveParseError) {
+        } catch (RecursiveParseError recursiveParseError) {
             synchronize();
             return null;
         }
@@ -54,19 +55,24 @@ public class RecursiveParser {
         return new Statement.Var(name, initializer);
     }
 
-
     private Statement statement() {
-        if (match(PRINT)) return printStatement();
-        if (match(IF)) return ifStatement();
-        if (match(WHILE)) return whileStatement();
-        if (match(LEFT_BRACE)) return new Statement.Block(block());
+        if (match(PRINT))
+            return printStatement();
+        if (match(IF))
+            return ifStatement();
+        if (match(WHILE))
+            return whileStatement();
+        if (match(FOR))
+            return forStatement();
+        if (match(LEFT_BRACE))
+            return new Statement.Block(block());
         return expressionStatement();
     }
 
     private List<Statement> block() {
         List<Statement> statements = new ArrayList<>();
 
-        while (!check(RIGHT_BRACE) && !isAtEnd()){
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
             statements.add(declaration());
         }
 
@@ -94,7 +100,7 @@ public class RecursiveParser {
         consume(LEFT_BRACE, "Expect '{' for beginning of if block");
         Statement thenBranch = new Statement.Block(block());
         Statement elseBranch = null;
-        if (match(ELSE)){
+        if (match(ELSE)) {
             consume(LEFT_BRACE, "Expect '{' for beginning of if block");
             elseBranch = new Statement.Block(block());
         }
@@ -113,6 +119,37 @@ public class RecursiveParser {
         return new Statement.While(condition, body);
     }
 
+    private Statement forStatement() {
+        consume(LEFT_PAREN, "'(' expected after for declaration");
+        Statement varDec;
+        if (match(SEMICOLON)){
+            varDec = null;
+        }
+        else if (match(VAR)) {
+            varDec = varDeclaration();
+        } else {
+            varDec = expressionStatement();
+        }
+
+        Expression condition = !match(SEMICOLON) ? expression() : null;
+        consume(SEMICOLON, "; expected after condition");
+        Statement update = !check(RIGHT_PAREN) ? new Statement.Expression(expression()) : null;
+        consume(RIGHT_PAREN, "')' expected after for declaration");
+
+        consume(LEFT_BRACE, "Expect '{' for beginning of for block");
+
+        List<Statement> forBody = block();
+
+        if (update != null) forBody.add(update);
+        Statement body = new Statement.Block(forBody);
+        Statement whileBody = new Statement.While(condition, body);
+
+        if (varDec == null) {
+            return whileBody;
+        }
+        Statement forStatement = new Statement.Block(List.of(varDec, whileBody));
+        return forStatement;
+    }
 
     private Expression expression() {
         return assignment();
@@ -149,8 +186,8 @@ public class RecursiveParser {
             Token equals = previous();
             Expression value = assignment();
 
-            if(expression instanceof Variable) {
-                Token name = ((Variable)expression).name;
+            if (expression instanceof Variable) {
+                Token name = ((Variable) expression).name;
                 return new Assign(name, value);
             }
 
@@ -184,7 +221,6 @@ public class RecursiveParser {
         return expression;
     }
 
-
     private Expression term() {
         Expression expression = factor();
 
@@ -209,9 +245,8 @@ public class RecursiveParser {
         return expression;
     }
 
-    
     private Expression unary() {
-        if(match(BANG, MINUS)) {
+        if (match(BANG, MINUS)) {
             Token operator = previous();
             Expression right = unary();
             return new Unary(operator, right);
@@ -221,13 +256,17 @@ public class RecursiveParser {
     }
 
     private Expression primary() {
-        if (match(FALSE)) return new Literal(false);
-        if (match(TRUE)) return new Literal(true);
-        if (match(NIL)) return new Literal(null);
+        if (match(FALSE))
+            return new Literal(false);
+        if (match(TRUE))
+            return new Literal(true);
+        if (match(NIL))
+            return new Literal(null);
         if (match(NUMBER, STRING)) {
             return new Literal(previous().literal);
         }
-        if (match(IDENTIFIER)) return new Variable(previous());
+        if (match(IDENTIFIER))
+            return new Variable(previous());
 
         if (match(LEFT_PAREN)) {
             Expression expression = expression();
@@ -238,9 +277,9 @@ public class RecursiveParser {
         throw error(peek(), "Expect expression.");
     }
 
-
     private Token consume(TokenType tokenType, String message) {
-        if (check(tokenType)) return advance();
+        if (check(tokenType))
+            return advance();
 
         throw error(peek(), message);
     }
@@ -254,8 +293,9 @@ public class RecursiveParser {
     private void synchronize() {
         advance();
 
-        while(!isAtEnd()) {
-            if (previous().type == SEMICOLON) return;
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON)
+                return;
 
             switch (peek().type) {
                 case CLASS:
@@ -274,7 +314,7 @@ public class RecursiveParser {
         }
     }
 
-    private boolean match(TokenType... tokenTypes) {;
+    private boolean match(TokenType... tokenTypes) {
         for (TokenType tokenType : tokenTypes) {
             if (check(tokenType)) {
                 advance();
@@ -285,7 +325,8 @@ public class RecursiveParser {
     }
 
     private boolean check(TokenType tokenType) {
-        if (isAtEnd()) return false;
+        if (isAtEnd())
+            return false;
         return (peek().type == tokenType);
     }
 
@@ -294,12 +335,13 @@ public class RecursiveParser {
     }
 
     private Token advance() {
-        if (!isAtEnd()) current++;
+        if (!isAtEnd())
+            current++;
         return previous();
     }
 
     private Token previous() {
-        return tokens.get(current-1);
+        return tokens.get(current - 1);
     }
 
     private boolean isAtEnd() {

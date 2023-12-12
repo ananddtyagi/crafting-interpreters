@@ -1,26 +1,8 @@
-// No initializers.
-var a;
-var b;
-a = "assigned";
+var a = 0;
+var temp;
 
-if (a) {
-    print("a value: " + a);
+for (var b = 1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
 }
-
-if (b) {
-    print("b value: " + b);
-} else {
-    print("b value not assigned");
-}
-
-b = "valued";
-if (b) {
-    print("b value: " + b);
-}
-
-var c = 1;
-while (c < 4){
-    print(c);
-    c = c + 1;
-}
-

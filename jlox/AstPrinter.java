@@ -3,6 +3,26 @@ package jlox;
 import jlox.Expression.*;
 
 class AstPrinter implements Expression.Visitor<String> {
+
+    public static void main(String[] args) {
+        System.out.println(new AstPrinter().print(example));
+    }
+
+    private static Expression example = new Variable(
+        new Token(TokenType.VAR, "x", null, 1, 0)
+    );
+
+    // private static Expression example = new Binary(
+    //         new Unary(
+    //             new Token(TokenType.MINUS, "-", null, 1, 0),
+    //             new Literal(123)
+    //         ),
+    //         new Token(TokenType.STAR, "*", null, 1, 1),
+    //         new Grouping(
+    //             new Literal(45.67)
+    //         )
+    //     );
+
     String print(Expression expression) {
         return expression.accept(this);
     }
@@ -31,8 +51,9 @@ class AstPrinter implements Expression.Visitor<String> {
 
     @Override
     public String visitVariableExpression(Variable expression) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpression'");
+        if (expression.name == null) return "nil";
+
+        return expression.name.toString();
     }
     
 
@@ -49,30 +70,13 @@ class AstPrinter implements Expression.Visitor<String> {
         return builder.toString();
     }
 
-    public static void main(String[] args) {
-        System.out.println(new AstPrinter().print(example));
-    }
-
-    private static Expression example = new Binary(
-            new Unary(
-                new Token(TokenType.MINUS, "-", null, 1, 0),
-                new Literal(123)
-            ),
-            new Token(TokenType.STAR, "*", null, 1, 1),
-            new Grouping(
-                new Literal(45.67)
-            )
-        );
-
     @Override
     public String visitAssignExpression(Assign expression) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpression'");
+        return "(" + expression.name + "=" + expression.value + ")";
     }
 
     @Override
     public String visitLogicalExpression(Logical expression) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitLogicalExpression'");
+        return "(" + expression.left + " " + expression.operator.lexeme + " " + expression.right;
     }
 }
